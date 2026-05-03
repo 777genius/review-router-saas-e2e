@@ -46,6 +46,7 @@ jobs:
         uses: 777genius/review-router@v1
         env:
           REVIEWROUTER_API_URL: http://localhost:4000
+          REVIEWROUTER_OIDC_AUDIENCE: reviewrouter
           REVIEWROUTER_RUNTIME_CONFIG_MODE: oidc
           REVIEWROUTER_STATIC_CONFIG_FALLBACK: "true"
           CODEX_AGENTIC_CONTEXT: "true"
