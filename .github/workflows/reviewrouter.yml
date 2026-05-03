@@ -47,3 +47,12 @@ jobs:
         env:
           REVIEWROUTER_API_URL: http://localhost:4000
           REVIEWROUTER_RUNTIME_CONFIG_MODE: oidc
+          REVIEWROUTER_STATIC_CONFIG_FALLBACK: "true"
+          CODEX_AGENTIC_CONTEXT: "true"
+          CODEX_MODEL: "gpt-5.5"
+          CODEX_REASONING_EFFORT: "medium"
+          FAIL_ON_SEVERITY: "critical"
+          INLINE_MAX_COMMENTS: "5"
+          REVIEW_AUTH_MODE: "codex-oauth"
+          REVIEWROUTER_CONFIG_SCHEMA_VERSION: "1"
+          TARGET_TOKENS_PER_BATCH: "50000"
