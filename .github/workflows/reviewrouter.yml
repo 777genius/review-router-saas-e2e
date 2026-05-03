@@ -87,7 +87,7 @@ jobs:
           echo "ReviewRouter runtime config will be fetched by the action using GitHub OIDC."
       - name: Run ReviewRouter
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-        uses: 777genius/review-router@v1
+        uses: 777genius/review-router@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
