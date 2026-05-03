@@ -46,6 +46,7 @@ jobs:
         uses: 777genius/review-router@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           REVIEWROUTER_API_URL: "http://localhost:4000"
           REVIEWROUTER_OIDC_AUDIENCE: "reviewrouter"
           REVIEWROUTER_RUNTIME_CONFIG_MODE: "oidc"
