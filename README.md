@@ -1,3 +1,3 @@
 # ReviewRouter SaaS E2E
 
-Disposable repository for ReviewRouter SaaS workflow provisioning smoke tests.
+Disposable repository used for ReviewRouter workflow smoke tests.
