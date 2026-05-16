@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
     env:
-      REVIEWROUTER_API_URL: "http://localhost:4000"
+      REVIEWROUTER_API_URL: "https://api.reviewrouter.site"
       REVIEWROUTER_OIDC_AUDIENCE: "reviewrouter"
       REVIEWROUTER_RUNTIME_CONFIG_MODE: "oidc"
       REVIEWROUTER_STATIC_CONFIG_FALLBACK: "true"
@@ -87,7 +87,7 @@ jobs:
           echo "ReviewRouter runtime config will be fetched by the action using GitHub OIDC."
       - name: Run ReviewRouter
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-        uses: 777genius/review-router@main
+        uses: 777genius/review-router@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
