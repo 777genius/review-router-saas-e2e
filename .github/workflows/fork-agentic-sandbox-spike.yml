@@ -38,6 +38,7 @@ jobs:
           set -euo pipefail
 
           mkdir -p "$HOME/.codex" "$HOME/.claude" sandbox-out safe-workspace
+          chmod 0777 sandbox-out
           printf '{"token":"%s"}\n' "$AUTH_CANARY" > "$HOME/.codex/auth.json"
           printf '{"token":"%s"}\n' "$AUTH_CANARY" > "$HOME/.claude/settings.json"
           printf 'SECRET=%s\n' "$WORKSPACE_CANARY" > pr-workspace/.env
