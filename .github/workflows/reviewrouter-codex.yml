@@ -1,0 +1,88 @@
+name: ReviewRouter Codex OAuth
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions: {}
+
+jobs:
+  codex-review:
+    name: review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      id-token: write
+    steps:
+      - name: ReviewRouter Codex review
+        id: run_reviewrouter
+        uses: 777genius/review-router@e2e/fork-agentic-sandbox-live-action
+        with:
+          mode: codex-oauth-rotating
+          api-url: "https://api.reviewrouter.site"
+          provider-instance-id: "codex-rotating:1228051727"
+          workflow-schema-version: "1"
+          auth-json: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON }}
+
+  fork-sandbox-review:
+    name: fork-sandbox-review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name != github.repository && vars.REVIEW_ROUTER_FORK_AGENTIC_SANDBOX == 'certified' }}
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout fork pull request head
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: safe-workspace
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Verify fork sandbox checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" = "${{ github.repository }}" ]; then
+            echo "::error::ReviewRouter fork sandbox is only for fork pull requests."
+            exit 1
+          fi
+          if [ "${{ vars.REVIEW_ROUTER_FORK_AGENTIC_SANDBOX }}" != "certified" ]; then
+            echo "::error::ReviewRouter fork sandbox requires REVIEW_ROUTER_FORK_AGENTIC_SANDBOX=certified."
+            exit 1
+          fi
+          case "${{ github.event.pull_request.head.sha }}" in
+            ""|*[!0-9a-fA-F]*)
+              echo "::error::ReviewRouter fork sandbox requires an exact pull request head SHA."
+              exit 1
+              ;;
+          esac
+          if git -C safe-workspace config --local --get-regexp 'http\..*\.extraheader|credential\.helper|url\..*\.insteadOf' >/tmp/reviewrouter-unsafe-git-config 2>/dev/null; then
+            cat /tmp/reviewrouter-unsafe-git-config
+            echo "::error::ReviewRouter fork sandbox checkout persisted credentials."
+            exit 1
+          fi
+          if find safe-workspace -type l -print -quit | grep -q .; then
+            echo "::error::ReviewRouter fork sandbox does not support symlinks yet."
+            exit 1
+          fi
+
+      - name: ReviewRouter fork sandbox review
+        id: run_fork_sandbox
+        uses: 777genius/review-router@e2e/fork-agentic-sandbox-live-action
+        with:
+          mode: fork-agentic-sandbox
+          api-url: "https://api.reviewrouter.site"
+          provider-instance-id: "codex-rotating:1228051727"
+          workflow-schema-version: "1"
+          auth-json: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON }}
+        env:
+          REVIEW_ROUTER_PR_WORKSPACE: ${{ github.workspace }}/safe-workspace
