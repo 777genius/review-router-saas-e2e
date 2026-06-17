@@ -70,7 +70,7 @@ jobs:
           chmod 0600 "$temp_codex_home/auth.json" "$temp_codex_home/decoy-secret.txt"
 
           cat > "$temp_codex_home/config.toml" <<EOF
-          approval_policy = "never"
+          approval_policy = "on-request"
           default_permissions = "fork_review"
           web_search = "disabled"
 
