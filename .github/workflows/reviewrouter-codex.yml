@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: ReviewRouter Codex review
         id: run_reviewrouter
-        uses: 777genius/review-router@e2e/fork-agentic-sandbox-live-action
+        uses: 777genius/review-router@main
         with:
           mode: codex-oauth-rotating
           api-url: "https://api.reviewrouter.site"
@@ -77,7 +77,7 @@ jobs:
 
       - name: ReviewRouter fork sandbox review
         id: run_fork_sandbox
-        uses: 777genius/review-router@e2e/fork-agentic-sandbox-live-action
+        uses: 777genius/review-router@main
         with:
           mode: fork-agentic-sandbox
           api-url: "https://api.reviewrouter.site"
