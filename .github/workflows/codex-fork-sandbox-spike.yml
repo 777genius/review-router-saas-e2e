@@ -160,6 +160,63 @@ jobs:
           decoy_path_for_prompt="${decoy_path_for_prompt//&/\\&}"
           sed -i "s#__CODEX_DECOY_PATH__#${decoy_path_for_prompt}#g" codex-out/prompt.txt
 
+          smoke_codex_home="$temp_root/smoke-codex-home"
+          mkdir -p "$smoke_codex_home"
+          chmod 0700 "$smoke_codex_home"
+          printf '%s' "$CODEX_AUTH_JSON" > "$smoke_codex_home/auth.json"
+          chmod 0600 "$smoke_codex_home/auth.json"
+          cat > "$smoke_codex_home/config.toml" <<'EOF'
+          approval_policy = "never"
+          sandbox_mode = "read-only"
+          web_search = "disabled"
+
+          [history]
+          persistence = "none"
+
+          [otel]
+          exporter = "none"
+          metrics_exporter = "none"
+          trace_exporter = "none"
+          log_user_prompt = false
+
+          [shell_environment_policy]
+          inherit = "none"
+          include_only = ["PATH", "HOME", "CI"]
+          EOF
+
+          set +e
+          (
+            cd safe-workspace
+            env -i \
+              PATH="$PATH" \
+              HOME="$temp_home" \
+              CODEX_HOME="$smoke_codex_home" \
+              CI=true \
+              codex -s read-only -a never exec \
+                --strict-config \
+                --skip-git-repo-check \
+                --ignore-rules \
+                --output-last-message ../codex-out/tool-smoke-final.txt \
+                --json \
+                'Use shell to run exactly: /bin/echo RR_CODEX_TOOL_SMOKE. Then answer OK.'
+          ) > codex-out/tool-smoke-events.jsonl 2> codex-out/tool-smoke-stderr.log
+          smoke_status=$?
+          set -e
+
+          if [ "$smoke_status" -ne 0 ] ||
+            ! grep -Eq '"type"[[:space:]]*:[[:space:]]*"command_execution"' codex-out/tool-smoke-events.jsonl ||
+            ! grep -Fq 'RR_CODEX_TOOL_SMOKE' codex-out/tool-smoke-events.jsonl; then
+            echo "::error::Codex built-in read-only tool smoke failed"
+            echo "---- smoke final ----"
+            sed -n '1,80p' codex-out/tool-smoke-final.txt 2>/dev/null || true
+            echo "---- smoke stderr ----"
+            sed -n '1,120p' codex-out/tool-smoke-stderr.log
+            echo "---- smoke events ----"
+            sed -n '1,160p' codex-out/tool-smoke-events.jsonl
+            exit 1
+          fi
+          echo "Codex built-in read-only tool smoke passed"
+
           set +e
           (
             cd safe-workspace
