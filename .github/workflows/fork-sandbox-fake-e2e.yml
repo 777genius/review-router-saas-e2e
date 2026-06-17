@@ -135,7 +135,7 @@ jobs:
             "if (process.env.OPENAI_API_KEY) fail('OPENAI_API_KEY leaked');",
             "if (process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN) fail('OIDC token leaked');",
             "if (process.env.INPUT_AUTH_JSON || process.env['INPUT_AUTH-JSON']) fail('auth input leaked');",
-            "if (process.env.OPENROUTER_MODEL || process.env.EXTRA_RUNTIME_FLAG || process.env.GEMINI_API_KEY || process.env.OPENCODE_API_KEY) fail('uncertified env leaked');",
+            "if (process.env.OPENROUTER_MODEL || process.env.GEMINI_MODEL || process.env.OPENCODE_MODEL || process.env.EXTRA_RUNTIME_FLAG || process.env.GEMINI_API_KEY || process.env.OPENCODE_API_KEY) fail('uncertified env leaked');",
             "const config = readFileSync(join(process.env.CODEX_HOME, 'config.toml'), 'utf8');",
             "if (!config.includes('model_provider = \\\"reviewrouter_proxy\\\"')) fail('proxy config missing');",
             "if (!config.includes('sandbox_mode = \\\"read-only\\\"')) fail('read-only config missing');",
@@ -207,8 +207,8 @@ jobs:
               CODEX_MODEL: 'gpt-5.5',
               CLAUDE_MODEL: 'sonnet',
               OPENROUTER_MODEL: 'openai/gpt-5.3-codex',
-              GEMINI_API_KEY: 'must-not-pass',
-              OPENCODE_API_KEY: 'must-not-pass',
+              GEMINI_MODEL: 'gemini-2.0',
+              OPENCODE_MODEL: 'qwen',
               EXTRA_RUNTIME_FLAG: 'must-not-pass'
             },
             'codex-only': {
@@ -220,8 +220,8 @@ jobs:
               PROVIDER_MAX_PARALLEL: '3',
               INLINE_MIN_AGREEMENT: '2',
               CODEX_MODEL: 'gpt-5.5',
-              GEMINI_API_KEY: 'must-not-pass',
-              OPENCODE_API_KEY: 'must-not-pass'
+              GEMINI_MODEL: 'gemini-2.0',
+              OPENCODE_MODEL: 'qwen'
             },
             'claude-only': {
               REVIEW_AUTH_MODE: 'codex-oauth-rotating',
@@ -232,8 +232,8 @@ jobs:
               PROVIDER_MAX_PARALLEL: '4',
               INLINE_MIN_AGREEMENT: '3',
               CLAUDE_MODEL: 'sonnet',
-              GEMINI_API_KEY: 'must-not-pass',
-              OPENCODE_API_KEY: 'must-not-pass'
+              GEMINI_MODEL: 'gemini-2.0',
+              OPENCODE_MODEL: 'qwen'
             },
             'openrouter-only': {
               REVIEW_AUTH_MODE: 'codex-oauth-rotating',
@@ -244,8 +244,8 @@ jobs:
               PROVIDER_MAX_PARALLEL: '4',
               INLINE_MIN_AGREEMENT: '3',
               OPENROUTER_MODEL: 'openai/gpt-5.3-codex',
-              GEMINI_API_KEY: 'must-not-pass',
-              OPENCODE_API_KEY: 'must-not-pass'
+              GEMINI_MODEL: 'gemini-2.0',
+              OPENCODE_MODEL: 'qwen'
             },
             'reject-uncertified': {
               REVIEW_AUTH_MODE: 'codex-oauth-rotating',
@@ -255,8 +255,8 @@ jobs:
               PROVIDER_LIMIT: '2',
               PROVIDER_MAX_PARALLEL: '2',
               INLINE_MIN_AGREEMENT: '2',
-              GEMINI_API_KEY: 'must-not-pass',
-              OPENCODE_API_KEY: 'must-not-pass'
+              GEMINI_MODEL: 'gemini-2.0',
+              OPENCODE_MODEL: 'qwen'
             }
           };
           function record(route, body) {
