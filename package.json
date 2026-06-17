@@ -1,0 +1,8 @@
+{
+  "name": "reviewrouter-clean-fork-e2e-fixture",
+  "private": true,
+  "scripts": {
+    "postinstall": "touch /tmp/reviewrouter-clean-pr-script-ran",
+    "test": "touch /tmp/reviewrouter-clean-pr-script-ran"
+  }
+}
