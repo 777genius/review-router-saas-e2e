@@ -119,6 +119,7 @@ jobs:
             "const workspace = resolve(process.env.GITHUB_WORKSPACE || '');",
             "if (workspace !== cwd) fail('GITHUB_WORKSPACE must equal safe workspace');",
             "if (!existsSync(join(cwd, 'fork-change.txt'))) fail('safe workspace file missing');",
+            "if (existsSync('/tmp/reviewrouter-pr-script-ran')) fail('PR-owned package script executed');",
             "if (process.env.REVIEWROUTER_FORK_AGENTIC_SANDBOX !== 'true') fail('fork flag missing');",
             "if (expected.claude && process.env.CLAUDE_AGENTIC_CONTEXT !== 'true') fail('claude agentic context missing');",
             "if (!expected.claude && process.env.CLAUDE_AGENTIC_CONTEXT) fail('claude agentic context leaked');",
