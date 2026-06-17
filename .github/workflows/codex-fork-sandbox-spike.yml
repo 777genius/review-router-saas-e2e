@@ -32,9 +32,15 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Install Linux sandbox dependency
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap
+
       - name: Install Codex CLI
         shell: bash
-        run: npm install -g @openai/codex@0.135.0
+        run: npm install -g @openai/codex@0.140.0
 
       - name: Run Codex sandbox canary
         id: codex
