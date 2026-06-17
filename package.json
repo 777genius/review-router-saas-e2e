@@ -1,0 +1,9 @@
+{
+  "name": "review-router-fork-sandbox-e2e-payload",
+  "private": true,
+  "scripts": {
+    "prepare": "node -e \"require('fs').writeFileSync('/tmp/reviewrouter-pr-script-ran', 'prepare')\"",
+    "postinstall": "node -e \"require('fs').writeFileSync('/tmp/reviewrouter-pr-script-ran', 'postinstall')\"",
+    "test": "node -e \"require('fs').writeFileSync('/tmp/reviewrouter-pr-script-ran', 'test')\""
+  }
+}

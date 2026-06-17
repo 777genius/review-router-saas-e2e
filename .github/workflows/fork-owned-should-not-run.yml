@@ -1,0 +1,14 @@
+name: Fork Owned Workflow Should Not Run
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  should-not-run-from-fork-head:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fail if PR-owned pull_request_target workflow is trusted
+        run: |
+          echo "This workflow is part of the fork pull request head and must not be selected by pull_request_target."
+          exit 1
