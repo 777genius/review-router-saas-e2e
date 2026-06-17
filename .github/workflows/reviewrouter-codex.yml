@@ -86,3 +86,4 @@ jobs:
           auth-json: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON }}
         env:
           REVIEW_ROUTER_PR_WORKSPACE: ${{ github.workspace }}/safe-workspace
+          REVIEW_THREAD_LIFECYCLE_RESOLVE_TOKEN: ${{ secrets.REVIEW_THREAD_LIFECYCLE_RESOLVE_TOKEN }}
