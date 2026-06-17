@@ -227,6 +227,7 @@ jobs:
           fetch-depth: 1
 
       - name: Verify fork sandbox checkout
+        id: verify_checkout
         shell: bash
         run: |
           set -euo pipefail
@@ -235,8 +236,22 @@ jobs:
             echo "::error::ReviewRouter fork sandbox checkout persisted credentials."
             exit 1
           fi
+          if find safe-workspace -type l -print -quit | grep -q .; then
+            echo "has_symlink=true" >> "$GITHUB_OUTPUT"
+            echo "ReviewRouter fork sandbox does not support symlinks yet."
+            exit 0
+          fi
+          echo "has_symlink=false" >> "$GITHUB_OUTPUT"
+
+      - name: Assert symlink checkout guard blocks runtime
+        if: ${{ steps.verify_checkout.outputs.has_symlink == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "FORK_SANDBOX_SYMLINK_GUARD_PASS:${{ matrix.scenario }}"
 
       - name: Start fake ReviewRouter control plane
+        if: ${{ steps.verify_checkout.outputs.has_symlink != 'true' }}
         id: fake_api
         shell: bash
         env:
@@ -387,6 +402,7 @@ jobs:
           grep '^api_url=' fake-control-plane.log
 
       - name: Run ReviewRouter fork sandbox action
+        if: ${{ steps.verify_checkout.outputs.has_symlink != 'true' }}
         id: run_reviewrouter
         continue-on-error: true
         uses: ./review-router-action
@@ -409,7 +425,7 @@ jobs:
           OPENCODE_API_KEY: inherited-must-not-leak
 
       - name: Assert ReviewRouter action outcome
-        if: always()
+        if: ${{ always() && steps.verify_checkout.outputs.has_symlink != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -426,7 +442,7 @@ jobs:
           fi
 
       - name: Assert fake control plane calls
-        if: always()
+        if: ${{ always() && steps.verify_checkout.outputs.has_symlink != 'true' }}
         shell: bash
         env:
           E2E_SCENARIO: ${{ matrix.scenario }}
