@@ -105,8 +105,59 @@ jobs:
           const fakeRuntime = [
             '#!/usr/bin/env node',
             "const { existsSync, readFileSync } = require('node:fs');",
+            "const https = require('node:https');",
             "const { join, resolve } = require('node:path');",
             "function fail(message) { console.error('E2E_FAIL:' + message); process.exit(1); }",
+            "function githubJson(method, path, body) {",
+            "  const payload = body === undefined ? undefined : JSON.stringify(body);",
+            "  return new Promise((resolve, reject) => {",
+            "    const req = https.request({",
+            "      hostname: 'api.github.com',",
+            "      path,",
+            "      method,",
+            "      headers: {",
+            "        accept: 'application/vnd.github+json',",
+            "        authorization: `Bearer ${process.env.GITHUB_TOKEN || ''}`,",
+            "        'content-type': 'application/json',",
+            "        'user-agent': 'reviewrouter-fork-sandbox-e2e',",
+            "        'x-github-api-version': '2022-11-28',",
+            "        ...(payload ? { 'content-length': Buffer.byteLength(payload) } : {}),",
+            "      },",
+            "    }, (res) => {",
+            "      let responseBody = '';",
+            "      res.on('data', (chunk) => { responseBody += chunk; });",
+            "      res.on('end', () => {",
+            "        let parsed = {};",
+            "        try { parsed = responseBody ? JSON.parse(responseBody) : {}; } catch {}",
+            "        resolve({ status: res.statusCode || 0, body: parsed, text: responseBody });",
+            "      });",
+            "    });",
+            "    req.on('error', reject);",
+            "    if (payload) req.write(payload);",
+            "    req.end();",
+            "  });",
+            "}",
+            "async function postGitHubWriteEvidence() {",
+            "  const repo = process.env.REVIEWROUTER_REPOSITORY_FULL_NAME;",
+            "  const pr = process.env.PR_NUMBER;",
+            "  const sha = process.env.REVIEWROUTER_HEAD_SHA;",
+            "  if (!repo || !pr || !sha) fail('github write evidence env missing');",
+            "  const issueMarker = `<!-- fork-sandbox-e2e-issue:${sha} -->`;",
+            "  const inlineMarker = `<!-- fork-sandbox-e2e-inline:${sha} -->`;",
+            "  const issueComment = await githubJson('POST', `/repos/${repo}/issues/${pr}/comments`, { body: `${issueMarker}\\nFork sandbox E2E issue comment from safe runtime.` });",
+            "  if (issueComment.status < 200 || issueComment.status >= 300) fail(`issue comment failed ${issueComment.status}: ${issueComment.text}`);",
+            "  const reviewBody = {",
+            "    event: 'COMMENT',",
+            "    body: `Fork sandbox E2E review body for ${sha}.`,",
+            "    comments: [{ path: 'fork-change.txt', line: 1, side: 'RIGHT', body: `${inlineMarker}\\nFork sandbox E2E inline review comment from safe runtime.` }],",
+            "  };",
+            "  let review = await githubJson('POST', `/repos/${repo}/pulls/${pr}/reviews`, reviewBody);",
+            "  if (review.status === 422) {",
+            "    review = await githubJson('POST', `/repos/${repo}/pulls/${pr}/reviews`, { ...reviewBody, comments: [{ path: 'fork-change.txt', position: 1, body: `${inlineMarker}\\nFork sandbox E2E inline review comment from safe runtime.` }] });",
+            "  }",
+            "  if (review.status < 200 || review.status >= 300) fail(`review comment failed ${review.status}: ${review.text}`);",
+            "  console.log(`FORK_SANDBOX_GITHUB_WRITE_E2E_PASS:${scenario}`);",
+            "}",
             "const scenario = process.env.E2E_SCENARIO || 'mixed-certified';",
             "const expected = {",
             "  'mixed-certified': { providers: 'codex/gpt-5.5,claude/sonnet,openrouter/openai/gpt-5.3-codex', required: 'claude/sonnet,openrouter/openai/gpt-5.3-codex', synthesis: 'openrouter/openai/gpt-5.3-codex', limit: '3', claude: true, openrouter: true },",
@@ -141,7 +192,10 @@ jobs:
             "if (!config.includes('sandbox_mode = \\\"read-only\\\"')) fail('read-only config missing');",
             "if (config.includes('refreshed-access-token')) fail('token leaked into config');",
             "if (existsSync(join(process.env.CODEX_HOME, 'auth.json'))) fail('auth json should be removed before runtime');",
-            "console.log('FORK_SANDBOX_FAKE_E2E_PASS:' + scenario);",
+            "(async () => {",
+            "  if (scenario === 'mixed-certified') await postGitHubWriteEvidence();",
+            "  console.log('FORK_SANDBOX_FAKE_E2E_PASS:' + scenario);",
+            "})().catch((error) => fail(error && error.stack ? error.stack : String(error)));",
             '',
           ].join('\n');
           writeFileSync(join(actionRoot, 'dist/index.js'), fakeRuntime);
@@ -410,6 +464,79 @@ jobs:
             if (commentToken?.body?.authCleared !== true) fail('comment-token authCleared missing');
           }
           console.log(`FORK_SANDBOX_CONTROL_PLANE_E2E_PASS:${scenario}:${routes.join(',')}`);
+          NODE
+
+      - name: Assert GitHub review comments were written
+        if: ${{ always() && matrix.scenario == 'mixed-certified' && steps.run_reviewrouter.outcome == 'success' }}
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const https = require('node:https');
+
+          const repo = process.env.REPOSITORY;
+          const pr = process.env.PR_NUMBER;
+          const sha = process.env.HEAD_SHA;
+          const token = process.env.GITHUB_TOKEN;
+          const issueMarker = `<!-- fork-sandbox-e2e-issue:${sha} -->`;
+          const inlineMarker = `<!-- fork-sandbox-e2e-inline:${sha} -->`;
+
+          function githubJson(path) {
+            return new Promise((resolve, reject) => {
+              const req = https.request({
+                hostname: 'api.github.com',
+                path,
+                method: 'GET',
+                headers: {
+                  accept: 'application/vnd.github+json',
+                  authorization: `Bearer ${token || ''}`,
+                  'user-agent': 'reviewrouter-fork-sandbox-e2e',
+                  'x-github-api-version': '2022-11-28',
+                },
+              }, (res) => {
+                let body = '';
+                res.on('data', (chunk) => { body += chunk; });
+                res.on('end', () => {
+                  let parsed = {};
+                  try { parsed = body ? JSON.parse(body) : {}; } catch {}
+                  resolve({ status: res.statusCode || 0, body: parsed, text: body });
+                });
+              });
+              req.on('error', reject);
+              req.end();
+            });
+          }
+
+          async function main() {
+            if (!repo || !pr || !sha || !token) {
+              throw new Error('GitHub comment assertion env missing');
+            }
+            const issueComments = await githubJson(`/repos/${repo}/issues/${pr}/comments?per_page=100`);
+            if (issueComments.status < 200 || issueComments.status >= 300) {
+              throw new Error(`issue comments read failed ${issueComments.status}: ${issueComments.text}`);
+            }
+            const reviewComments = await githubJson(`/repos/${repo}/pulls/${pr}/comments?per_page=100`);
+            if (reviewComments.status < 200 || reviewComments.status >= 300) {
+              throw new Error(`review comments read failed ${reviewComments.status}: ${reviewComments.text}`);
+            }
+            if (!Array.isArray(issueComments.body) || !issueComments.body.some((comment) => comment.body?.includes(issueMarker))) {
+              throw new Error(`issue comment marker missing: ${issueMarker}`);
+            }
+            if (!Array.isArray(reviewComments.body) || !reviewComments.body.some((comment) => comment.body?.includes(inlineMarker))) {
+              throw new Error(`inline review comment marker missing: ${inlineMarker}`);
+            }
+            console.log(`FORK_SANDBOX_GITHUB_COMMENT_ASSERT_PASS:${sha}`);
+          }
+
+          main().catch((error) => {
+            console.error(`E2E_GITHUB_COMMENT_ASSERT_FAIL:${error && error.stack ? error.stack : String(error)}`);
+            process.exit(1);
+          });
           NODE
 
       - name: Stop fake control plane
