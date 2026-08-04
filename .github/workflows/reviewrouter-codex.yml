@@ -1,89 +1,57 @@
 name: ReviewRouter Codex OAuth
 
+run-name: ${{ format('ReviewRouter review PR {0} at {1}', github.event.pull_request.number, github.event.pull_request.head.sha) }}
+
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-  pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+  schedule:
+    - cron: "17 */6 * * *"
 
 permissions: {}
 
 jobs:
   codex-review:
-    name: review
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository }}
-    permissions:
-      id-token: write
-    steps:
-      - name: ReviewRouter Codex review
-        id: run_reviewrouter
-        uses: 777genius/review-router@main
-        with:
-          mode: codex-oauth-rotating
-          api-url: "https://api.reviewrouter.site"
-          provider-instance-id: "codex-rotating:1228051727"
-          workflow-schema-version: "1"
-          auth-json: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON }}
-
-  fork-sandbox-review:
-    name: fork-sandbox-review
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    if: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name != github.repository && vars.REVIEW_ROUTER_FORK_AGENTIC_SANDBOX == 'certified' }}
+    name: codex-review
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.type != 'Bot' && (github.event.pull_request.draft == false || vars.REVIEW_ROUTER_REVIEW_DRAFTS == 'true') }}
+    concurrency:
+      group: reviewrouter-codex-oauth-${{ github.repository_id }}-codex-rotating-1228051727
+      cancel-in-progress: false
     permissions:
       contents: read
-      pull-requests: write
-      issues: write
+      pull-requests: read
+      id-token: write
+    uses: 777genius/review-router/.github/workflows/reviewrouter-t0-reusable.yml@295e76f7777a995b8fd0b0bb0a36788429c89b83
+    with:
+      runtime_ref: "295e76f7777a995b8fd0b0bb0a36788429c89b83"
+      api_url: "https://api.reviewrouter.site"
+      runtime_config_mode: oidc
+      pr_number: ${{ format('{0}', github.event.pull_request.number) }}
+      review_head_sha: ${{ github.event.pull_request.head.sha }}
+      provider_instance_id: "codex-rotating:1228051727"
+      workflow_schema_version: 2
+      max_changed_lines: ${{ vars.REVIEW_ROUTER_MAX_CHANGED_LINES }}
+      review_timeout_minutes: ${{ fromJSON(vars.REVIEW_ROUTER_TIMEOUT_MINUTES || '60') }}
+    secrets:
+      CODEX_AUTH_JSON: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON }}
+
+  codex-refresh:
+    name: codex-refresh
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    concurrency:
+      group: reviewrouter-codex-oauth-${{ github.repository_id }}-codex-rotating-1228051727
+      cancel-in-progress: false
+    if: ${{ github.event_name == 'schedule' }}
+    permissions:
       id-token: write
     steps:
-      - name: Checkout fork pull request head
-        uses: actions/checkout@v6
+      - name: ReviewRouter Codex OAuth refresh
+        id: refresh_codex
+        uses: 777genius/review-router@295e76f7777a995b8fd0b0bb0a36788429c89b83
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.sha }}
-          path: safe-workspace
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Verify fork sandbox checkout
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event.pull_request.head.repo.full_name }}" = "${{ github.repository }}" ]; then
-            echo "::error::ReviewRouter fork sandbox is only for fork pull requests."
-            exit 1
-          fi
-          if [ "${{ vars.REVIEW_ROUTER_FORK_AGENTIC_SANDBOX }}" != "certified" ]; then
-            echo "::error::ReviewRouter fork sandbox requires REVIEW_ROUTER_FORK_AGENTIC_SANDBOX=certified."
-            exit 1
-          fi
-          case "${{ github.event.pull_request.head.sha }}" in
-            ""|*[!0-9a-fA-F]*)
-              echo "::error::ReviewRouter fork sandbox requires an exact pull request head SHA."
-              exit 1
-              ;;
-          esac
-          if git -C safe-workspace config --local --get-regexp 'http\..*\.extraheader|credential\.helper|url\..*\.insteadOf' >/tmp/reviewrouter-unsafe-git-config 2>/dev/null; then
-            cat /tmp/reviewrouter-unsafe-git-config
-            echo "::error::ReviewRouter fork sandbox checkout persisted credentials."
-            exit 1
-          fi
-          if find safe-workspace -type l -print -quit | grep -q .; then
-            echo "::error::ReviewRouter fork sandbox does not support symlinks yet."
-            exit 1
-          fi
-
-      - name: ReviewRouter fork sandbox review
-        id: run_fork_sandbox
-        uses: 777genius/review-router@main
-        with:
-          mode: fork-agentic-sandbox
+          mode: codex-oauth-refresh
           api-url: "https://api.reviewrouter.site"
           provider-instance-id: "codex-rotating:1228051727"
-          workflow-schema-version: "1"
+          workflow-schema-version: "2"
           auth-json: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON }}
-        env:
-          REVIEW_ROUTER_PR_WORKSPACE: ${{ github.workspace }}/safe-workspace
-          REVIEW_THREAD_LIFECYCLE_RESOLVE_TOKEN: ${{ secrets.REVIEW_THREAD_LIFECYCLE_RESOLVE_TOKEN }}
