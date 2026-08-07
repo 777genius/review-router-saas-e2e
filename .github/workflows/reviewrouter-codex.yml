@@ -29,7 +29,7 @@ jobs:
       pr_number: ${{ format('{0}', github.event.pull_request.number) }}
       review_head_sha: ${{ github.event.pull_request.head.sha }}
       provider_instance_id: "codex-rotating:1228051727"
-      workflow_schema_version: 2
+      workflow_schema_version: 3
       max_changed_lines: ${{ vars.REVIEW_ROUTER_MAX_CHANGED_LINES }}
       review_timeout_minutes: ${{ fromJSON(vars.REVIEW_ROUTER_TIMEOUT_MINUTES || '240') }}
     secrets:
@@ -53,5 +53,5 @@ jobs:
           mode: codex-oauth-refresh
           api-url: "https://api.reviewrouter.site"
           provider-instance-id: "codex-rotating:1228051727"
-          workflow-schema-version: "2"
+          workflow-schema-version: "3"
           auth-json: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON }}
