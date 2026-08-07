@@ -1,1 +1,1 @@
-context-canary revision 13 - investigation cohort and fresh reviewer auth proof
+context-canary revision 14 - clean lifecycle investigation and publication proof
