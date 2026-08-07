@@ -1,1 +1,1 @@
-context-canary revision 8 - app-server warning compatibility
+context-canary revision 9 - safe app-server diagnostics
