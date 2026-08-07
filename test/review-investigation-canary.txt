@@ -1,1 +1,1 @@
-context-canary revision 10 - publication reconciliation and reuse proof
+context-canary revision 11 - rollout diagnostics and stale publication proof
