@@ -1,1 +1,1 @@
-context-canary revision 14 - clean lifecycle investigation and publication proof
+context-canary revision 15 - clean discovery investigation and publication proof
