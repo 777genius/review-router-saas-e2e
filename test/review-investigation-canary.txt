@@ -1,1 +1,1 @@
-context-canary revision 11 - rollout diagnostics and stale publication proof
+context-canary revision 12 - trusted action rollout and stale publication proof
