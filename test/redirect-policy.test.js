@@ -23,6 +23,13 @@ test("rejects redirects to an unrelated origin", () => {
   );
 });
 
+test("rejects redirects that downgrade the configured protocol", () => {
+  assert.equal(
+    isAllowedRedirect("http://trusted.example/account", "https://trusted.example"),
+    false,
+  );
+});
+
 test("rejects host-prefix collisions", () => {
   assert.equal(
     isAllowedRedirect(
