@@ -45,6 +45,10 @@ test("rejects malformed URLs", () => {
   assert.equal(isAllowedRedirect("https://trusted.example", ""), false);
 });
 
+test("rejects relative redirect candidates", () => {
+  assert.equal(isAllowedRedirect("/account", "https://trusted.example"), false);
+});
+
 test("rejects non-string redirect inputs", () => {
   assert.equal(isAllowedRedirect(null, "https://trusted.example"), false);
   assert.equal(isAllowedRedirect({}, "https://trusted.example"), false);
