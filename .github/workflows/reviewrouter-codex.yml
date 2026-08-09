@@ -48,7 +48,7 @@ jobs:
     steps:
       - name: ReviewRouter Codex OAuth refresh
         id: refresh_codex
-        uses: 777genius/review-router@8d9ec14da01e89a5656226d30f4a71a6a06fc856
+        uses: 777genius/review-router@08f6bc1481fd284fa82adfa47cda05c76b161b00
         with:
           mode: codex-oauth-refresh
           api-url: "https://api.reviewrouter.site"
