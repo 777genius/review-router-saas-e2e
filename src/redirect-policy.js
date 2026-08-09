@@ -4,7 +4,7 @@ export function isAllowedRedirect(candidate, allowedOrigin) {
   }
 
   try {
-    return new URL(candidate).hostname === new URL(allowedOrigin).hostname;
+    return new URL(candidate).origin === new URL(allowedOrigin).origin;
   } catch {
     return false;
   }
