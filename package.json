@@ -1,0 +1,8 @@
+{
+  "name": "review-router-saas-e2e-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
