@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { add, multiply, subtract } from "../src/math.js";
+import { add, multiply, negate, subtract } from "../src/math.js";
 
 test("adds positive values", () => {
   assert.equal(add(2, 3), 5);
@@ -21,4 +21,8 @@ test("subtracts values", () => {
 
 test("multiplies values", () => {
   assert.equal(multiply(6, 7), 42);
+});
+
+test("negates values", () => {
+  assert.equal(negate(8), -8);
 });
