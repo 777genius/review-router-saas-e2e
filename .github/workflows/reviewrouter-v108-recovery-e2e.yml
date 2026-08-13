@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
+      - name: Install pinned Codex CLI
+        run: npm install --global @openai/codex@0.141.0
+
       - name: Recover versioned Codex secret
         env:
           LEGACY_CODEX_AUTH_JSON: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON }}
