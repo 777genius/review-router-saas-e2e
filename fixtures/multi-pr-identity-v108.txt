@@ -3,3 +3,5 @@ ReviewRouter v1.0.108 multi-PR identity E2E.
 This synchronization commit is intentionally shared by two open pull requests.
 
 The second synchronization runs after both base branches pin v1.0.108.
+
+The final synchronization uses schema v3 and independent per-PR lanes.
