@@ -16,13 +16,10 @@ jobs:
       id-token: write
     steps:
       - name: Print non-secret OIDC source claims
-        env:
-          OIDC_REQUEST_URL: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL }}
-          OIDC_REQUEST_TOKEN: ${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
         run: |
           node <<'NODE'
-          const response = await fetch(`${process.env.OIDC_REQUEST_URL}&audience=reviewrouter`, {
-            headers: { authorization: `Bearer ${process.env.OIDC_REQUEST_TOKEN}` },
+          const response = await fetch(`${process.env.ACTIONS_ID_TOKEN_REQUEST_URL}&audience=reviewrouter`, {
+            headers: { authorization: `Bearer ${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}` },
           });
           if (!response.ok) throw new Error(`oidc_request_failed:${response.status}`);
           const { value } = await response.json();
