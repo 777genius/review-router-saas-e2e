@@ -18,8 +18,6 @@ jobs:
           ref: fc8148940e4d333a1f1890dac08c5f70198d6832
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10.28.1
 
       - uses: actions/setup-node@v4
         with:
