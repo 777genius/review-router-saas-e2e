@@ -34,7 +34,9 @@ jobs:
           printf '%s' "${LEGACY_CODEX_AUTH_JSON}" > "${codex_home}/auth.json"
           chmod 600 "${codex_home}/auth.json"
 
-          request_id="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+          # Retry the transaction that already acquired recovery ownership.
+          # A fresh id would correctly conflict with the active recovery fence.
+          request_id="3357a8cc-a7a2-4b1e-b529-32e7724e9cd4"
           status="$(curl -q --silent --show-error \
             --output "${response_file}" \
             --write-out '%{http_code}' \
