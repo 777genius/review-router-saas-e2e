@@ -38,6 +38,7 @@ jobs:
             import { getPrisma } from "./src/server/prisma.ts";
             import { PrismaCodexRotatingSetupPayloadClaim } from "./src/server/prisma-codex-rotating-setup-payload-claim.ts";
 
+            (async () => {
             const prisma = getPrisma();
             try {
               const result = await activateCodexRotatingSetup({
@@ -64,4 +65,5 @@ jobs:
             } finally {
               await prisma["$disconnect"]();
             }
+            })();
           '
