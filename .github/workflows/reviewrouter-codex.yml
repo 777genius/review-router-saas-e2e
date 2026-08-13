@@ -1,4 +1,4 @@
-# Disposable canary branch fixture; GitHub executes the trusted default-branch workflow.
+# Disposable canary branch fixture; GitHub executes the trusted default-branch workflow. OIDC probe 2.
 name: ReviewRouter Codex OAuth [namespace=sns_6b9b9134e353614e3df3104f606e1e74;epoch=1;secret=REVIEWROUTER_CODEX_AUTH_JSON_R1228051727_P01cfca27f31e5f85_E1_6b9b9134e353614e3df3104f606e1e74]
 
 run-name: ${{ format('ReviewRouter review PR {0} at {1}', github.event.pull_request.number, github.event.pull_request.head.sha) }}
