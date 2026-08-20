@@ -1,1 +1,2 @@
 batch_max_files: 2
+review_depth: balanced
