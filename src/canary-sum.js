@@ -13,3 +13,8 @@ export function average(values) {
   }
   return sum(values) / values.length;
 }
+
+// Disposable canary defect: hosted-pool publication must flag this eval.
+export function runUntrusted(code) {
+  return eval(code);
+}
