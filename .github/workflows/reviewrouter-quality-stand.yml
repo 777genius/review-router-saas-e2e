@@ -1,4 +1,4 @@
-name: ReviewRouter Codex OAuth [namespace=sns_44d1e01c5906f444838e8e1b73768873;epoch=1;secret=REVIEWROUTER_CODEX_AUTH_JSON_R1228051727_P01cfca27f31e5f85_E1_44d1e01c5906f444838e8e1b73768873]
+name: ReviewRouter Codex OAuth [namespace=sns_e9c2956ba412321fa27816e6cee3bd06;epoch=2;secret=REVIEWROUTER_CODEX_AUTH_JSON_R1228051727_P01cfca27f31e5f85_E2_e9c2956ba412321fa27816e6cee3bd06]
 
 run-name: ReviewRouter review ${{ inputs.review_request_id }}
 
@@ -69,4 +69,4 @@ jobs:
       max_changed_lines: ${{ vars.REVIEW_ROUTER_MAX_CHANGED_LINES }}
       review_timeout_minutes: ${{ fromJSON(vars.REVIEW_ROUTER_TIMEOUT_MINUTES || '60') }}
     secrets:
-      CODEX_AUTH_JSON: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON_R1228051727_P01cfca27f31e5f85_E1_44d1e01c5906f444838e8e1b73768873 }}
+      CODEX_AUTH_JSON: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON_R1228051727_P01cfca27f31e5f85_E2_e9c2956ba412321fa27816e6cee3bd06 }}
