@@ -1,9 +1,9 @@
-name: ReviewRouter Codex OAuth [namespace=sns_44d1e01c5906f444838e8e1b73768873;epoch=1;secret=REVIEWROUTER_CODEX_AUTH_JSON_R1228051727_P01cfca27f31e5f85_E1_44d1e01c5906f444838e8e1b73768873]
+name: ReviewRouter Hosted Codex
 
-run-name: ${{ format('ReviewRouter review PR {0} at {1}', github.event.pull_request.number, github.event.pull_request.head.sha) }}
+run-name: ${{ format('ReviewRouter hosted review PR {0} at {1}', github.event.pull_request.number, github.event.pull_request.head.sha) }}
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 permissions: {}
@@ -11,24 +11,22 @@ permissions: {}
 jobs:
   codex-review:
     name: codex-review
-    if: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.type != 'Bot' && (github.event.pull_request.draft == false || vars.REVIEW_ROUTER_REVIEW_DRAFTS == 'true') }}
-    concurrency:
-      group: reviewrouter-codex-oauth-${{ github.repository_id }}-codex-rotating-1228051727
-      cancel-in-progress: false
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.type != 'Bot' && (github.event.pull_request.draft == false || vars.REVIEW_ROUTER_REVIEW_DRAFTS == 'true') }}
     permissions:
       contents: read
       pull-requests: read
       id-token: write
-    uses: 777genius/review-router/.github/workflows/reviewrouter-t0-reusable.yml@2fe74d7d230ec09f551d160c83482f95d491632f
+    uses: 777genius/review-router/.github/workflows/reviewrouter-t0-reusable.yml@29a6e3a1f2a537905fa7fd12e17a50f9d7af323f
     with:
-      runtime_ref: "2fe74d7d230ec09f551d160c83482f95d491632f"
-      api_url: "https://b810-178-168-84-35.ngrok-free.app"
+      runtime_ref: "29a6e3a1f2a537905fa7fd12e17a50f9d7af323f"
+      api_url: "https://api.reviewrouter.site"
       runtime_config_mode: oidc
       pr_number: ${{ format('{0}', github.event.pull_request.number) }}
       review_head_sha: ${{ github.event.pull_request.head.sha }}
-      provider_instance_id: "codex-rotating:1228051727"
-      workflow_schema_version: 4
+      provider_instance_id: "hosted-pool:repository:1228051727"
+      workflow_schema_version: 2
       max_changed_lines: ${{ vars.REVIEW_ROUTER_MAX_CHANGED_LINES }}
       review_timeout_minutes: ${{ fromJSON(vars.REVIEW_ROUTER_TIMEOUT_MINUTES || '60') }}
-    secrets:
-      CODEX_AUTH_JSON: ${{ secrets.REVIEWROUTER_CODEX_AUTH_JSON_R1228051727_P01cfca27f31e5f85_E1_44d1e01c5906f444838e8e1b73768873 }}
+      codex_session_mode: codex_subscription_oauth_hosted_pool
+      session_binding_id: "e203aeaa-1419-4404-948d-269a5d1b7c5a"
+      session_binding_version: 1
