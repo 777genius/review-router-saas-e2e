@@ -1,0 +1,1 @@
+{"paths":{"/users/{id}":{"get":{"operationId":"getUser"}}}}
