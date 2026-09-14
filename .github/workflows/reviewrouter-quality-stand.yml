@@ -57,10 +57,10 @@ jobs:
       contents: read
       pull-requests: read
       id-token: write
-    uses: 777genius/review-router/.github/workflows/reviewrouter-t0-reusable.yml@cd2db0345716e6d4ae28878e2d36c325e91f7fcf
+    uses: 777genius/review-router/.github/workflows/reviewrouter-t0-reusable.yml@bc3925e88470bf36d914d8d7ede74994455b69c8
     with:
-      runtime_ref: "cd2db0345716e6d4ae28878e2d36c325e91f7fcf"
-      api_url: "https://work-investor-reality-malpractice.trycloudflare.com"
+      runtime_ref: "bc3925e88470bf36d914d8d7ede74994455b69c8"
+      api_url: "https://mag-terminology-easter-email.trycloudflare.com"
       runtime_config_mode: oidc
       pr_number: ${{ inputs.pr_number }}
       review_head_sha: ${{ inputs.review_head_sha }}
