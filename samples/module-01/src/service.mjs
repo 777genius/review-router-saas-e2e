@@ -1,1 +1,1 @@
-export function changedApi() { return 1; }
+export function changedApi() { return String(1); }
