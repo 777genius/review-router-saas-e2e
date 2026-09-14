@@ -60,7 +60,7 @@ jobs:
     uses: 777genius/review-router/.github/workflows/reviewrouter-t0-reusable.yml@cd2db0345716e6d4ae28878e2d36c325e91f7fcf
     with:
       runtime_ref: "cd2db0345716e6d4ae28878e2d36c325e91f7fcf"
-      api_url: "https://cape-rom-warned-increasingly.trycloudflare.com"
+      api_url: "https://work-investor-reality-malpractice.trycloudflare.com"
       runtime_config_mode: oidc
       pr_number: ${{ inputs.pr_number }}
       review_head_sha: ${{ inputs.review_head_sha }}
